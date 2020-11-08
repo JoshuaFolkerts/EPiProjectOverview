@@ -13,6 +13,7 @@
 
 @helper DisplayTable(IEnumerable<AlloyEPI.Business.ProjectsAdmin.Models.ProjectsItem> items)
 {
+   
     if (items.Any())
     {
         <table class="epi-default" style="border-style: None; border-collapse: collapse; margin-bottom: 20px">
@@ -28,8 +29,9 @@
             <tbody>
                 @foreach (var projectItem in items)
                 {
+                    
                 <tr>
-                    <td>@projectItem.Project.Name</td>
+                    <td><a href="@projectItem.Url">@projectItem.Project.Name</a></td>
                     <td>@Html.Raw(string.Format("{0} / {1} ({2:P0} complete)", projectItem.PendingPublish, projectItem.Count, projectItem.PercentComplete))</td>
                     <td>@projectItem.Project.Status</td>
                     <td>@projectItem.Project.CreatedBy</td>

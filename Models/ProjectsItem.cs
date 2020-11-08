@@ -1,4 +1,7 @@
-﻿using EPiServer.DataAbstraction;
+﻿using EPiServer;
+using EPiServer.DataAbstraction;
+using EPiServer.Globalization;
+using System.Globalization;
 using System.Web.UI.WebControls;
 
 namespace AlloyEPI.Business.ProjectsAdmin.Models
@@ -12,6 +15,15 @@ namespace AlloyEPI.Business.ProjectsAdmin.Models
         public ProjectsItem(Project project)
         {
             this.Project = project;
+        }
+
+        public string Url
+        {
+            get
+            {
+                CultureInfo currentCulture = ContentLanguage.PreferredCulture;
+                return $"{UriSupport.UIUrl}/#context=epi.cms.project:///{this.Project.ID}&viewsetting=viewlanguage:///{currentCulture.Name}";
+            }
         }
 
         public Project Project { get; set; }

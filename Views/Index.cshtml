@@ -1,0 +1,46 @@
+﻿@model AlloyEPI.Business.ProjectsAdmin.Models.ProjectsItemListing
+@{
+    Layout = "~/Business/ProjectsAdmin/Views/ProjectsAdminLayout.cshtml";
+}
+<div class="epi-contentContainer epi-padding">
+    <h1 style="padding-top: 60px;">My Projects</h1>
+    @DisplayTable(Model.MyListings)
+
+    <h1 style="padding-top: 60px;">Other Projects</h1>
+    @DisplayTable(Model.OtherListings)
+
+</div>
+
+@helper DisplayTable(IEnumerable<AlloyEPI.Business.ProjectsAdmin.Models.ProjectsItem> items)
+{
+    if (items.Any())
+    {
+        <table class="epi-default" style="border-style: None; border-collapse: collapse; margin-bottom: 20px">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Progress</th>
+                    <th>Status</th>
+                    <th>Owner</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var projectItem in items)
+                {
+                <tr>
+                    <td>@projectItem.Project.Name</td>
+                    <td>@Html.Raw(string.Format("{0} / {1} ({2:P0} complete)", projectItem.PendingPublish, projectItem.Count, projectItem.PercentComplete))</td>
+                    <td>@projectItem.Project.Status</td>
+                    <td>@projectItem.Project.CreatedBy</td>
+                    <td>@projectItem.Project.Created.ToShortDateString()</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p>No projects availables</p>
+    }
+}

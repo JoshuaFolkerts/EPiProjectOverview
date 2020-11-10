@@ -1,12 +1,9 @@
 ﻿using AlloyEPI.Business.ProjectsAdmin.Models;
 using EPiServer;
-using EPiServer.Cms.Shell.UI.Rest.Projects;
 using EPiServer.Core;
 using EPiServer.DataAbstraction;
-using System.Collections.Generic;
 using System.Linq;
 using System.Web.Mvc;
-using System.Web.UI.WebControls;
 
 namespace AlloyEPI.Business.ProjectsAdmin.Controllers
 {
@@ -17,15 +14,15 @@ namespace AlloyEPI.Business.ProjectsAdmin.Controllers
 
         private readonly ProjectRepository projectRepository;
 
-        private readonly IProjectService projectService;
+        private readonly IContentVersionRepository contentVersionRepository;
 
         private readonly IContentLoader contentLoader;
 
-        public ProjectsAdminController(IProjectResolver projectResolver, ProjectRepository projectRepository, IProjectService projectService, IContentLoader contentLoader)
+        public ProjectsAdminController(IProjectResolver projectResolver, ProjectRepository projectRepository, IContentVersionRepository contentVersionRepository, IContentLoader contentLoader)
         {
             this.projectResolver = projectResolver;
             this.projectRepository = projectRepository;
-            this.projectService = projectService;
+            this.contentVersionRepository = contentVersionRepository;
             this.contentLoader = contentLoader;
         }
 
@@ -39,13 +36,19 @@ namespace AlloyEPI.Business.ProjectsAdmin.Controllers
 
             foreach (var item in list)
             {
-                var items = this.projectRepository.ListItems(item.ID);
+                var items = this.projectRepository.ListItems(item.ID)
+                    .Select(x => this.contentLoader.Get<IContent>(x.ContentLink, new LoaderOptions { new ProjectLoaderOption { ProjectIds = new[] { item.ID } } }));
                 var projectItem = new ProjectsItem(item)
                 {
                     Count = items.Count(),
-                    PendingPublish = items.Select(x => this.contentLoader.Get<IContent>(x.ContentLink, new LoaderOptions { new ProjectLoaderOption { ProjectIds = new[] { item.ID } } }))
-                        .Where(x => (x is IVersionable versionable) && ((versionable.Status == VersionStatus.CheckedIn || versionable.IsPendingPublish)))
-                        .Count()
+                    PendingPublish = items
+                        .OfType<IVersionable>()
+                        .Where(x => x.Status == VersionStatus.CheckedIn || x.IsPendingPublish)
+                        .Count(),
+                    LastUpdated = items
+                        .Select(x => this.contentVersionRepository.Load(x.ContentLink))
+                        .OrderBy(x => x.Saved)
+                        .FirstOrDefault(version => version.IsMasterLanguageBranch).Saved
                 };
 
                 if (item.CreatedBy.Equals(User.Identity.Name, System.StringComparison.OrdinalIgnoreCase))
@@ -55,6 +58,16 @@ namespace AlloyEPI.Business.ProjectsAdmin.Controllers
             }
 
             return View("~/Business/ProjectsAdmin/Views/Index.cshtml", model);
+        }
+
+        [HttpPost]
+        public ActionResult Delete(int id)
+        {
+            if (id != 0)
+            {
+                this.projectRepository.Delete(id);
+            }
+            return this.RedirectToAction("Index");
         }
     }
 }

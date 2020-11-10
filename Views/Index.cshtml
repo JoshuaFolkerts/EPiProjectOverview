@@ -4,16 +4,16 @@
 }
 <div class="epi-contentContainer epi-padding">
     <h1 style="padding-top: 60px;">My Projects</h1>
-    @DisplayTable(Model.MyListings)
+    @DisplayTable(Model.MyListings, true)
 
     <h1 style="padding-top: 60px;">Other Projects</h1>
     @DisplayTable(Model.OtherListings)
 
 </div>
 
-@helper DisplayTable(IEnumerable<AlloyEPI.Business.ProjectsAdmin.Models.ProjectsItem> items)
+@helper DisplayTable(IEnumerable<AlloyEPI.Business.ProjectsAdmin.Models.ProjectsItem> items, bool owner = false)
 {
-   
+
     if (items.Any())
     {
         <table class="epi-default" style="border-style: None; border-collapse: collapse; margin-bottom: 20px">
@@ -23,20 +23,33 @@
                     <th>Progress</th>
                     <th>Status</th>
                     <th>Owner</th>
-                    <th>Created</th>
+                    <th>Last Updated</th>
+                    @if (owner)
+                    {
+                        <th style="text-align: center;">Delete?</th>
+                    }
                 </tr>
             </thead>
             <tbody>
                 @foreach (var projectItem in items)
                 {
-                    
-                <tr>
-                    <td><a href="@projectItem.Url">@projectItem.Project.Name</a></td>
-                    <td>@Html.Raw(string.Format("{0} / {1} ({2:P0} complete)", projectItem.PendingPublish, projectItem.Count, projectItem.PercentComplete))</td>
-                    <td>@projectItem.Project.Status</td>
-                    <td>@projectItem.Project.CreatedBy</td>
-                    <td>@projectItem.Project.Created.ToShortDateString()</td>
-                </tr>
+
+                    <tr>
+                        <td><a href="@projectItem.Url">@projectItem.Project.Name</a></td>
+                        <td>@Html.Raw(string.Format("{0} / {1} ({2:P0} complete)", projectItem.PendingPublish, projectItem.Count, projectItem.PercentComplete))</td>
+                        <td>@projectItem.Project.Status</td>
+                        <td>@projectItem.Project.CreatedBy</td>
+                        <td>@projectItem.LastUpdated.ToShortDateString()</td>
+                        @if (owner)
+                        {
+                            <td style="text-align: center;">
+                                <form action="@Url.Action("delete", "projectsadmin", new { id = projectItem.Project.ID })" method="post">
+                                    <span class="epi-cmsButton"><input class="epi-cmsButton-text epi-cmsButton-tools epi-cmsButton-Delete" type="submit" value="Delete" title="Delete"></span>
+                                </form>
+
+                            </td>
+                        }
+                    </tr>
                 }
             </tbody>
         </table>

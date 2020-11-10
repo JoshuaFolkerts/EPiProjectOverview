@@ -1,6 +1,7 @@
 ﻿using EPiServer;
 using EPiServer.DataAbstraction;
 using EPiServer.Globalization;
+using System;
 using System.Globalization;
 using System.Web.UI.WebControls;
 
@@ -31,6 +32,8 @@ namespace AlloyEPI.Business.ProjectsAdmin.Models
         public int Count { get; set; }
 
         public int PendingPublish { get; set; }
+
+        public DateTime LastUpdated { get; set; }
 
         public double PercentComplete
         {
